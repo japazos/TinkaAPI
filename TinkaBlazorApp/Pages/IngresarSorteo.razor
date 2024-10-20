@@ -1,0 +1,151 @@
+﻿@page "/ingresar-sorteo"
+@inject IHttpClientFactory HttpClientFactory
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+
+<h3>Ingresar Valores de Sorteo</h3>
+
+<EditForm Model="@sorteo" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="id">ID:</label>
+        <InputText id="id" @bind-Value="sorteo.id" />
+    </div>
+    <div>
+        <label for="fecha">Fecha:</label>
+        <InputDate id="fecha" @bind-Value="sorteo.fecha" />
+    </div>
+    <div>
+        <label for="bolilla1">Bolilla 1:</label>
+        <InputNumber id="bolilla1" @bind-Value="sorteo.bolilla1" />
+    </div>
+    <div>
+        <label for="bolilla2">Bolilla 2:</label>
+        <InputNumber id="bolilla2" @bind-Value="sorteo.bolilla2" />
+    </div>
+    <div>
+        <label for="bolilla3">Bolilla 3:</label>
+        <InputNumber id="bolilla3" @bind-Value="sorteo.bolilla3" />
+    </div>
+    <div>
+        <label for="bolilla4">Bolilla 4:</label>
+        <InputNumber id="bolilla4" @bind-Value="sorteo.bolilla4" />
+    </div>
+    <div>
+        <label for="bolilla5">Bolilla 5:</label>
+        <InputNumber id="bolilla5" @bind-Value="sorteo.bolilla5" />
+    </div>
+    <div>
+        <label for="bolilla6">Bolilla 6:</label>
+        <InputNumber id="bolilla6" @bind-Value="sorteo.bolilla6" />
+    </div>
+
+    <button type="submit">Enviar</button>
+</EditForm>
+
+@if (message != null)
+{
+    <p>@message</p>
+}
+
+<h3>Registros de Sorteo</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Bolilla1</th>
+            <th>Bolilla2</th>
+            <th>Bolilla3</th>
+            <th>Bolilla4</th>
+            <th>Bolilla5</th>
+            <th>Bolilla6</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in sorteos)
+        {
+            <tr>
+                <td>@item.id</td>
+                <td>@item.fecha.ToString("yyyy-MM-dd")</td>
+                <td>@item.bolilla1</td>
+                <td>@item.bolilla2</td>
+                <td>@item.bolilla3</td>
+                <td>@item.bolilla4</td>
+                <td>@item.bolilla5</td>
+                <td>@item.bolilla6</td>
+                <td>
+                    <button @onclick="() => EditSorteo(item)">Editar</button>
+                    <button @onclick="() => DeleteSorteo(item.id)">Eliminar</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private Sorteo sorteo = new Sorteo();
+    private List<Sorteo> sorteos = new List<Sorteo>();
+    private string message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSorteos();
+    }
+
+    private async Task LoadSorteos()
+    {
+        var client = HttpClientFactory.CreateClient("TinkaApi");
+        sorteos = await client.GetFromJsonAsync<List<Sorteo>>("api/tinka/sorteos");
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var client = HttpClientFactory.CreateClient("TinkaApi");
+        var response = await client.PostAsJsonAsync("api/tinka/sorteo", sorteo);
+        if (response.IsSuccessStatusCode)
+        {
+            message = "¡Sorteo ingresado exitosamente!";
+            await LoadSorteos();
+        }
+        else
+        {
+            message = "Hubo un error al ingresar el sorteo.";
+        }
+    }
+
+    private void EditSorteo(Sorteo item)
+    {
+        sorteo = item;
+    }
+
+    private async Task DeleteSorteo(string id)
+    {
+        var client = HttpClientFactory.CreateClient("TinkaApi");
+        var response = await client.DeleteAsync($"api/tinka/sorteo/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            message = "¡Sorteo eliminado exitosamente!";
+            await LoadSorteos();
+        }
+        else
+        {
+            message = "Hubo un error al eliminar el sorteo.";
+        }
+    }
+
+    public class Sorteo
+    {
+        public string id { get; set; }
+        public DateTime fecha { get; set; }
+        public int bolilla1 { get; set; }
+        public int bolilla2 { get; set; }
+        public int bolilla3 { get; set; }
+        public int bolilla4 { get; set; }
+        public int bolilla5 { get; set; }
+        public int bolilla6 { get; set; }
+    }
+}

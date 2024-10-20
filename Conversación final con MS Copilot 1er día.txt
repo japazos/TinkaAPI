@@ -1,0 +1,196 @@
+ahora si funcionó el endpoint prediccion, favor si me explicas como ha ido evolucionando el código que me has ido dando para entender que patrones has ido usando
+Copilot
+¡Me alegro de que todo funcione! Vamos a hacer un pequeño repaso sobre cómo hemos evolucionado el código y los patrones que hemos utilizado.
+
+Inicio: Configuración Básica y Autenticación
+Configuración Inicial:
+
+appsettings.json: Se configuraron los parámetros de Cosmos DB.
+
+Program.cs: Configuramos el cliente de Cosmos DB y los servicios necesarios.
+
+Evolución: Controladores y Dependencia
+Inyección de Dependencias:
+
+Usamos el patrón de inyección de dependencias para inicializar el cliente de Cosmos DB y pasar los contenedores necesarios al servicio.
+
+Evolución: Modelo de Datos y Controlador
+Modelos de Datos:
+
+Definimos las clases Sorteo y FrecuenciaBolilla asegurándonos de que los campos id coincidan con las claves de partición.
+
+Implementación de Funciones de Predicción
+Servicio TinkaService:
+
+Implementamos un servicio para manejar la lógica de negocio, como la creación de Sorteo y FrecuenciaBolilla, y las funciones de predicción.
+
+Exposición de Endpoints
+Controlador TinkaController:
+
+Configuramos los endpoints API para permitir la inserción de datos y recuperar predicciones.
+
+Configuración de Swagger
+Swagger:
+
+Agregamos Swagger para documentar y probar fácilmente los endpoints.
+
+Resumen del Código
+appsettings.json: Contiene la configuración del cliente Cosmos DB.
+
+json
+
+Copiar
+{
+  "CosmosDb": {
+    "Account": "https://localhost:8081",
+    "Key": "YOUR_KEY",
+    "DatabaseName": "AzCosmosDBPazos",
+    "ContainerName": "TinkaPrediccion"
+  }
+}
+Program.cs: Configuración y registro de servicios.
+
+csharp
+
+Copiar
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton(s =>
+{
+    var cosmosClient = new CosmosClient(
+        builder.Configuration["CosmosDb:Account"],
+        builder.Configuration["CosmosDb:Key"],
+        new CosmosClientOptions
+        {
+            HttpClientFactory = () =>
+            {
+                var httpClientHandler = new HttpClientHandler();
+                httpClientHandler.ServerCertificateCustomValidationCallback = (req, cert, chain, errors) => true;
+                return new HttpClient(httpClientHandler);
+            }
+        });
+
+    var database = cosmosClient.GetDatabase("AzCosmosDBPazos");
+    var sorteoContainer = database.GetContainer("TinkaPrediccion");
+    var frecuenciaContainer = database.GetContainer("FrecuenciaBolilla");
+
+    return new TinkaService(sorteoContainer, frecuenciaContainer);
+});
+
+builder.Services.AddControllers();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.MapControllers();
+
+app.Run();
+Clases de Modelo: Definimos modelos que coinciden con los documentos Cosmos DB.
+
+csharp
+
+Copiar
+public class Sorteo
+{
+    [JsonProperty("id")]
+    public string Id { get; set; }
+    public DateTime Fecha { get; set; }
+    public int Bolilla1 { get; set; }
+    public int Bolilla2 { get; set; }
+    public int Bolilla3 { get; set; }
+    public int Bolilla4 { get; set; }
+    public int Bolilla5 { get; set; }
+    public int Bolilla6 { get; set; }
+}
+
+public class FrecuenciaBolilla
+{
+    [JsonProperty("id")]
+    public string Id => Bolilla.ToString();
+    public int Bolilla { get; set; }
+    public int NumVeces { get; set; }
+}
+Servicio TinkaService: Lógica de negocio para Cosmos DB y predicciones.
+
+csharp
+
+Copiar
+public class TinkaService
+{
+    private readonly Container _sorteoContainer;
+    private readonly Container _frecuenciaContainer;
+
+    public TinkaService(Container sorteoContainer, Container frecuenciaContainer)
+    {
+        _sorteoContainer = sorteoContainer ?? throw new ArgumentNullException(nameof(sorteoContainer));
+        _frecuenciaContainer = frecuenciaContainer ?? throw new ArgumentNullException(nameof(frecuenciaContainer));
+    }
+
+    public async Task<ItemResponse<Sorteo>> CreateSorteoAsync(Sorteo sorteo)
+    {
+        return await _sorteoContainer.CreateItemAsync(sorteo, new PartitionKey(sorteo.Id));
+    }
+
+    public async Task<ItemResponse<FrecuenciaBolilla>> CreateFrecuenciaAsync(FrecuenciaBolilla frecuencia)
+    {
+        return await _frecuenciaContainer.CreateItemAsync(frecuencia, new PartitionKey(frecuencia.Id));
+    }
+
+    public int[] MayorFrecuencia() { /* Implementación aquí */ }
+    public int[] RegresionPolinomica() { /* Implementación aquí */ }
+    public int[] ObtenerValoresAleatorios() { /* Implementación aquí */ }
+    public int[] MenorFrecuencia() { /* Implementación aquí */ }
+
+    public int[] PrediccionFinal()
+    {
+        var mayorFrecuencia = MayorFrecuencia();
+        var regresionPolinomica = RegresionPolinomica();
+        var valoresAleatorios = ObtenerValoresAleatorios();
+        var menorFrecuencia = MenorFrecuencia();
+
+        var combinacion = mayorFrecuencia.Concat(regresionPolinomica).Concat(valoresAleatorios).Concat(menorFrecuencia)
+                                         .OrderBy(x => Guid.NewGuid()).Take(6).ToArray();
+        return combinacion;
+    }
+}
+Controlador TinkaController: Endpoints para interactuar con el servicio.
+
+csharp
+
+Copiar
+[ApiController]
+[Route("api/[controller]")]
+public class TinkaController : ControllerBase
+{
+    private readonly TinkaService _tinkaService;
+
+    public TinkaController(TinkaService tinkaService)
+    {
+        _tinkaService = tinkaService;
+    }
+
+    [HttpPost("sorteo")]
+    public async Task<IActionResult> CreateSorteo([FromBody] Sorteo sorteo)
+    {
+        var response = await _tinkaService.CreateSorteoAsync(sorteo);
+        return Ok(response);
+    }
+
+    [HttpPost("frecuencia")]
+    public async Task<IActionResult> CreateFrecuencia([FromBody] FrecuenciaBolilla frecuencia)
+    {
+        var response = await _tinkaService.CreateFrecuenciaAsync(frecuencia);
+        return Ok(response);
+    }
+
+    [HttpGet("prediccion")]
+    public IActionResult GetPrediccionFinal()
+    {
+        var prediccion = _tinkaService.PrediccionFinal();
+        return Ok(prediccion);
+    }
+}
+Con esto, tu aplicación debería estar completamente funcional, con endpoints para manejar y predecir datos de los sorteos de la Tinka. ¡Gran trabajo! 🚀 ¿Algún otro ajuste o característica que te gustaría agregar?
