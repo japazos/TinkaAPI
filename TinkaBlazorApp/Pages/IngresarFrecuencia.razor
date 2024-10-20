@@ -1,0 +1,109 @@
+﻿@page "/ingresar-frecuencia"
+@inject IHttpClientFactory HttpClientFactory
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+
+<h3>Ingresar Valores de Frecuencia de Bolilla</h3>
+
+<EditForm Model="@frecuenciaBolilla" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    
+    <div>
+        <label for="bolilla">Bolilla:</label>
+        <InputNumber id="bolilla" @bind-Value="frecuenciaBolilla.bolilla" />
+    </div>
+    <div>
+        <label for="numVeces">Número de Veces:</label>
+        <InputNumber id="numVeces" @bind-Value="frecuenciaBolilla.numVeces" />
+    </div>
+
+    <button type="submit">Enviar</button>
+</EditForm>
+
+@if (message != null)
+{
+    <p>@message</p>
+}
+
+<h3>Registros de Frecuencia</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Bolilla</th>
+            <th>Número de Veces</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in frecuencias)
+        {
+            <tr>
+                <td>@item.bolilla</td>
+                <td>@item.numVeces</td>
+                <td>
+                    <button @onclick="() => EditFrecuencia(item)">Editar</button>
+                    <button @onclick="() => DeleteFrecuencia(item.bolilla)">Eliminar</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private FrecuenciaBolilla frecuenciaBolilla = new FrecuenciaBolilla();
+    private List<FrecuenciaBolilla> frecuencias = new List<FrecuenciaBolilla>();
+    private string message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFrecuencias();
+    }
+
+    private async Task LoadFrecuencias()
+    {
+        var client = HttpClientFactory.CreateClient("TinkaApi");
+        frecuencias = await client.GetFromJsonAsync<List<FrecuenciaBolilla>>("api/tinka/frecuencias");
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var client = HttpClientFactory.CreateClient("TinkaApi");
+        var response = await client.PostAsJsonAsync("api/tinka/frecuencia", frecuenciaBolilla);
+        if (response.IsSuccessStatusCode)
+        {
+            message = "¡Frecuencia de bolilla ingresada exitosamente!";
+            await LoadFrecuencias();
+        }
+        else
+        {
+            message = "Hubo un error al ingresar la frecuencia de bolilla.";
+        }
+    }
+
+    private void EditFrecuencia(FrecuenciaBolilla item)
+    {
+        frecuenciaBolilla = item;
+    }
+
+    private async Task DeleteFrecuencia(int bolilla)
+    {
+        var client = HttpClientFactory.CreateClient("TinkaApi");
+        var response = await client.DeleteAsync($"api/tinka/frecuencia/{bolilla}");
+        if (response.IsSuccessStatusCode)
+        {
+            message = "¡Frecuencia de bolilla eliminada exitosamente!";
+            await LoadFrecuencias();
+        }
+        else
+        {
+            message = "Hubo un error al eliminar la Frecuencia de bolilla.";
+        }
+    }
+
+    public class FrecuenciaBolilla
+    {
+        public int bolilla { get; set; }
+        public int numVeces { get; set; }
+    }
+}

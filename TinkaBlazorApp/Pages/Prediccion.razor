@@ -1,0 +1,26 @@
+﻿@page "/prediccion"
+@inject IHttpClientFactory HttpClientFactory
+
+<h3>Predicción de Tinka</h3>
+
+<button @onclick="GetPrediccion">Obtener Predicción</button>
+
+@if (prediccion != null)
+{
+    <ul>
+        @foreach (var numero in prediccion)
+        {
+            <li>@numero</li>
+        }
+    </ul>
+}
+
+@code {
+    private int[] prediccion;
+
+    private async Task GetPrediccion()
+    {
+        var client = HttpClientFactory.CreateClient("TinkaApi");
+        prediccion = await client.GetFromJsonAsync<int[]>("api/tinka/prediccion");
+    }
+}
