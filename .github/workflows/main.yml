@@ -20,13 +20,9 @@ jobs:
 
     - name: Set up Cosmos DB environment variables
       run: |
-        echo "COSMOS_DB_ACCOUNT=$COSMOS_DB_ACCOUNT" >> $GITHUB_ENV
-        echo "COSMOS_DB_KEY=$COSMOS_DB_KEY" >> $GITHUB_ENV
-        echo "COSMOS_DB_DATABASE_NAME=$COSMOS_DB_DATABASE_NAME" >> $GITHUB_ENV
-      env:
-        COSMOS_DB_ACCOUNT: ${{ secrets.COSMOS_DB_ACCOUNT }}
-        COSMOS_DB_KEY: ${{ secrets.COSMOS_DB_KEY }}
-        COSMOS_DB_DATABASE_NAME: ${{ secrets.COSMOS_DB_DATABASE_NAME }}
+        echo "COSMOS_DB_ACCOUNT=${{ secrets.COSMOS_DB_ACCOUNT }}" >> $GITHUB_ENV
+        echo "COSMOS_DB_KEY=${{ secrets.COSMOS_DB_KEY }}" >> $GITHUB_ENV
+        echo "COSMOS_DB_DATABASE_NAME=${{ secrets.COSMOS_DB_DATABASE_NAME }}" >> $GITHUB_ENV
 
     - name: Restore dependencies
       run: dotnet restore

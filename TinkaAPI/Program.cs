@@ -11,8 +11,8 @@ public class Program
         {
             var configuration = s.GetRequiredService<IConfiguration>();
             var cosmosClient = new CosmosClient(
-                configuration["CosmosDb:Account"],
-                configuration["CosmosDb:Key"]
+                Environment.GetEnvironmentVariable("COSMOS_DB_ACCOUNT"),
+                Environment.GetEnvironmentVariable("COSMOS_DB_KEY")
             );
 
             var database = cosmosClient.GetDatabase(configuration["CosmosDb:DatabaseName"]);
@@ -21,7 +21,6 @@ public class Program
 
             return new TinkaService(sorteoContainer, frecuenciaContainer);
         });
-
 
         builder.Services.AddControllers();
         builder.Services.AddSwaggerGen();
