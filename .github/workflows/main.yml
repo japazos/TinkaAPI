@@ -20,6 +20,7 @@ jobs:
 
     - name: Set up Cosmos DB environment variables
       run: |
+        cd TinkaBlazorApp
         echo "COSMOS_DB_ACCOUNT=${{ secrets.COSMOS_DB_ACCOUNT }}" >> $GITHUB_ENV
         echo "COSMOS_DB_KEY=${{ secrets.COSMOS_DB_KEY }}" >> $GITHUB_ENV
         echo "COSMOS_DB_DATABASE_NAME=${{ secrets.COSMOS_DB_DATABASE_NAME }}" >> $GITHUB_ENV
