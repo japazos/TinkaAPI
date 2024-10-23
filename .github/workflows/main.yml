@@ -1,40 +1,47 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.Net Core app to Azure Web App - predicciontinka
+name: .NET Core
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.x'
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 8.0.x
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+    - name: Set up Cosmos DB environment variables
+      run: |
+        echo "COSMOS_DB_ACCOUNT=${{ secrets.COSMOS_DB_ACCOUNT }}" >> $GITHUB_ENV
+        echo "COSMOS_DB_KEY=${{ secrets.COSMOS_DB_KEY }}" >> $GITHUB_ENV
+        echo "COSMOS_DB_DATABASE_NAME=${{ secrets.COSMOS_DB_DATABASE_NAME }}" >> $GITHUB_ENV
 
-      - name: Publish
-        run: |
-          cd TinkaBlazorApp
-          dotnet publish -c Release -o ./publish
-        #dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+    - name: Restore dependencies
+      run: dotnet restore
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+    - name: Build
+      run: dotnet build --no-restore
+
+    - name: Run tests
+      run: dotnet test --no-build --verbosity normal
+
+    - name: Publish
+      run: |
+        dotnet publish -c Release -o ./publish
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dotnet-app  # Nombre del artefacto
+        path: ./publish  # Ruta del artefacto
 
   deploy:
     runs-on: windows-latest
@@ -42,18 +49,19 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: .net-app
-      
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'predicciontinka'
-          slot-name: 'Production'
-          package: .
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_3b4947a110ec4a0ea1d28f4f92e2fef3 }}
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v4
+      with:
+        name: dotnet-app  # Nombre debe coincidir
+        path: ./artifacts
+
+    - name: Deploy to Azure WebApp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_CREDENTIALS }}
+        package: ./artifacts
