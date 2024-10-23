@@ -59,9 +59,11 @@ jobs:
         name: dotnet-app  # Nombre debe coincidir
         path: ./artifacts
 
-    - name: Deploy to Azure WebApp
-      uses: azure/webapps-deploy@v2
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v3
       with:
-        app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_CREDENTIALS }}
-        package: ./artifacts
+        app-name: 'predicciontinka'
+        slot-name: 'Production'
+        package: .
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_3b4947a110ec4a0ea1d28f4f92e2fef3 }}
