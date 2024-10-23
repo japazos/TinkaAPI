@@ -33,11 +33,14 @@ jobs:
     - name: Run tests
       run: dotnet test --no-build --verbosity normal
 
+    - name: Publish
+      run: dotnet publish -c Release -o ./publish
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: dotnet-app
-        path: ./publish
+        name: dotnet-app  # Nombre del artefacto
+        path: ./publish  # Ruta del artefacto
 
   deploy:
     runs-on: ubuntu-latest
@@ -50,7 +53,7 @@ jobs:
     - name: Download artifact
       uses: actions/download-artifact@v4
       with:
-        name: dotnet-app
+        name: dotnet-app  # Nombre del artefacto debe coincidir
         path: ./artifacts
 
     - name: Log in to Azure
