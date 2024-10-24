@@ -1,4 +1,4 @@
-name: .NET Core and Blazor Deployment 8
+name: .NET Core and Blazor Deployment
 
 on:
   push:
