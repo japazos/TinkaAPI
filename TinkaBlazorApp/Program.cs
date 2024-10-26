@@ -12,7 +12,7 @@ builder.Services.AddSingleton<WeatherForecastService>();
 
 builder.Services.AddHttpClient("TinkaApi", client =>
 {
-    client.BaseAddress = new Uri("https://predicciontinka.azurewebsites.net"); // URL de tu API (para ejec.local es https://localhost:5001/)
+    client.BaseAddress = new Uri("https://predicciontinka.azurewebsites.net"); // URL de tu API 
 });
 
 
