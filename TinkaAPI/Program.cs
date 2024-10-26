@@ -11,8 +11,8 @@ public class Program
         {
             var configuration = s.GetRequiredService<IConfiguration>();
             var cosmosClient = new CosmosClient(
-                configuration.GetValue<string>("COSMOS_DB_ACCOUNT", "https://azcosmosdbpazos.documents.azure.com:443/"),
-                configuration.GetValue<string>("COSMOS_DB_KEY", "XrIhhO0mwv5EbiA07hXpkjM8a69chqn4Fr1O4ZDjRYghRkrnS7givBvFX1kwqNfp2LGPM85cz5LCACDbgYQy5A=="),
+                configuration.GetValue<string>("COSMOS_DB_ACCOUNT"),
+                configuration.GetValue<string>("COSMOS_DB_KEY"),
                 //builder.Configuration["CosmosDb:Account"],
                 //builder.Configuration["CosmosDb:Key"],
                 new CosmosClientOptions
