@@ -1,0 +1,91 @@
+name: .NET Core and Blazor Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Set up Cosmos DB environment variables
+      run: |
+        echo "COSMOS_DB_ACCOUNT=${{ secrets.COSMOS_DB_ACCOUNT }}" >> $GITHUB_ENV
+        echo "COSMOS_DB_KEY=${{ secrets.COSMOS_DB_KEY }}" >> $GITHUB_ENV
+        echo "COSMOS_DB_DATABASE_NAME=${{ secrets.COSMOS_DB_DATABASE_NAME }}" >> $GITHUB_ENV
+
+    - name: Restore dependencies for TinkaAPI
+      run: dotnet restore ./TinkaAPI
+
+    - name: Restore dependencies for TinkaBlazorApp
+      run: dotnet restore ./TinkaBlazorApp
+
+    - name: Build TinkaAPI
+      run: dotnet build ./TinkaAPI --no-restore
+
+    - name: Build TinkaBlazorApp
+      run: dotnet build ./TinkaBlazorApp --no-restore
+
+    - name: Run tests for TinkaAPI
+      run: dotnet test ./TinkaAPI --no-build --verbosity normal
+
+    - name: Publish TinkaAPI
+      run: dotnet publish ./TinkaAPI -c Release -o ./publish/TinkaAPI
+
+    - name: Publish TinkaBlazorApp
+      run: dotnet publish ./TinkaBlazorApp -c Release -o ./publish/TinkaBlazorApp
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dotnet-app
+        path: ./publish
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: dotnet-app
+        path: ./artifacts
+
+    - name: Log in to Azure
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        auth-type: "SERVICE_PRINCIPAL"
+
+    - name: Deploy TinkaAPI to Azure WebApp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'predicciontinka'
+        package: ./artifacts/TinkaAPI
+
+    - name: Deploy TinkaBlazorApp to Azure WebApp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'predicciontinka'
+        package: ./artifacts/TinkaBlazorApp
