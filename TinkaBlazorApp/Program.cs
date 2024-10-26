@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using TinkaBlazorApp.Data;
 using Polly;
 
@@ -8,10 +10,9 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 
-//entorno de pruebas local
 builder.Services.AddHttpClient("TinkaApi", client =>
 {
-    client.BaseAddress = new Uri("https://predicciontinka.azurewebsites.net/"); // URL de tu API
+    client.BaseAddress = new Uri("https://predicciontinka.azurewebsites.net"); // URL de tu API (para ejec.local es https://localhost:5001/)
 });
 
 

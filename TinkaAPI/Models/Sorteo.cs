@@ -6,7 +6,6 @@ namespace ProyeccionTinka.Models
     public class Sorteo
     {
         [JsonProperty("id")]
-        public string Id { get; set; }
         public DateTime Fecha { get; set; }
         public int Bolilla1 { get; set; }
         public int Bolilla2 { get; set; }
@@ -15,6 +14,7 @@ namespace ProyeccionTinka.Models
         public int Bolilla5 { get; set; }
         public int Bolilla6 { get; set; }
     }
+
 
 
 

@@ -1,4 +1,5 @@
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Hosting;
 
 public class Program
 {
@@ -6,30 +7,28 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        // Asegúrate de que el entorno sea Production por defecto
+        var environment = builder.Configuration.GetValue<string>("ASPNETCORE_ENVIRONMENT") ?? "Production";
+        builder.Host.UseEnvironment(environment);
+
         // Configuración del cliente de Cosmos DB
         builder.Services.AddSingleton(s =>
         {
             var configuration = s.GetRequiredService<IConfiguration>();
             var cosmosClient = new CosmosClient(
                 configuration.GetValue<string>("COSMOS_DB_ACCOUNT"),
-                configuration.GetValue<string>("COSMOS_DB_KEY"),
-                //builder.Configuration["CosmosDb:Account"],
-                //builder.Configuration["CosmosDb:Key"],
-                new CosmosClientOptions
-                {
-                    HttpClientFactory = () =>
-                    {
-                        var httpClientHandler = new HttpClientHandler();
-                        httpClientHandler.ServerCertificateCustomValidationCallback = (req, cert, chain, errors) => true;
-                        return new HttpClient(httpClientHandler);
-                    }
-                });
-
-            var database = cosmosClient.GetDatabase(builder.Configuration["CosmosDb:DatabaseName"]);
+                configuration.GetValue<string>("COSMOS_DB_KEY")
+            );
+            var database = cosmosClient.GetDatabase(configuration["CosmosDb:DatabaseName"]);
             var sorteoContainer = database.GetContainer("TinkaPrediccion");
             var frecuenciaContainer = database.GetContainer("FrecuenciaBolilla");
-
             return new TinkaService(sorteoContainer, frecuenciaContainer);
+        });
+
+        // Configuración del cliente HTTP para la API
+        builder.Services.AddHttpClient("ApiClient", client =>
+        {
+            client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("ApiSettings:BaseUrl"));
         });
 
         builder.Services.AddControllers();
@@ -44,3 +43,4 @@ public class Program
         app.Run();
     }
 }
+

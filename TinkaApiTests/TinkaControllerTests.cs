@@ -23,14 +23,6 @@ namespace TinkaApiTests
         {
             var sorteo = new
             {
-                id = "1200",
-                fecha = "2024-06-23",
-                bolilla1 = 30,
-                bolilla2 = 41,
-                bolilla3 = 11,
-                bolilla4 = 5,
-                bolilla5 = 36,
-                bolilla6 = 35
             };
 
             var response = await _client.PostAsJsonAsync("/api/tinka/sorteo", sorteo);
@@ -38,18 +30,54 @@ namespace TinkaApiTests
         }
 
         [Fact]
+        public async Task GetSorteos_ReturnsArray()
+        {
+            var response = await _client.GetAsync("/api/tinka/sorteos");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains("[", content);
+            Assert.Contains("]", content);
+        }
+
+        [Fact]
+        public async Task DeleteSorteo_ReturnsSuccess()
+        {
+            var sorteoId = "9999";  // ID comodín
+
+            var response = await _client.DeleteAsync($"/api/tinka/sorteo/{sorteoId}");
+            response.EnsureSuccessStatusCode();
+        }
+
+        // Pruebas para Frecuencia
+        [Fact]
         public async Task CreateFrecuencia_ReturnsSuccess()
         {
             var frecuencia = new
             {
-                bolilla = 51,
-                numVeces = 15
             };
 
             var response = await _client.PostAsJsonAsync("/api/tinka/frecuencia", frecuencia);
             response.EnsureSuccessStatusCode();
         }
 
+        [Fact]
+        public async Task GetFrecuencias_ReturnsArray()
+        {
+            var response = await _client.GetAsync("/api/tinka/frecuencias");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains("[", content);
+            Assert.Contains("]", content);
+        }
+
+        [Fact]
+        public async Task DeleteFrecuencia_ReturnsSuccess()
+        {
+            var frecuenciaId = 99;  // ID comodín
+
+            var response = await _client.DeleteAsync($"/api/tinka/frecuencia/{frecuenciaId}");
+            response.EnsureSuccessStatusCode();
+        }
 
         [Fact]
         public async Task GetPrediccion_ReturnsArray()
@@ -61,7 +89,6 @@ namespace TinkaApiTests
             Assert.Contains("]", content);
         }
 
-        [Fact]
         public async Task ImportExcel_ReturnsSuccess()
         {
             // Crear un archivo Excel en memoria para la prueba
@@ -101,8 +128,8 @@ namespace TinkaApiTests
 
             var response = await _client.PostAsync("/api/tinka/import-excel", content);
             response.EnsureSuccessStatusCode();
-        }
 
+    }
     }
 }
 

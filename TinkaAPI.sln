@@ -9,6 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinkaApiTests", "TinkaApiTe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinkaBlazorApp", "TinkaBlazorApp\TinkaBlazorApp.csproj", "{7019235E-5B75-49DE-9517-42D75DFF2F94}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{F0E250AE-A9BD-4295-9F55-258DF5313D94}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{2C77D39B-023D-4C2F-83D4-10BBC3CD95FF}"
+	ProjectSection(SolutionItems) = preProject
+		main.yml = main.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +37,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2C77D39B-023D-4C2F-83D4-10BBC3CD95FF} = {F0E250AE-A9BD-4295-9F55-258DF5313D94}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3C8D852D-FC07-4D92-8438-710C2CAA31D5}

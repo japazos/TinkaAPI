@@ -57,6 +57,7 @@ public class TinkaController : ControllerBase
     {
         try
         {
+            
             var response = await _tinkaService.CreateFrecuenciaAsync(frecuencia);
             return Ok(response);
         }
