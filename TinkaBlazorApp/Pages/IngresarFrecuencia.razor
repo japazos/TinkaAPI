@@ -2,13 +2,13 @@
 @inject IHttpClientFactory HttpClientFactory
 @using System.Net.Http.Json
 @using Microsoft.AspNetCore.Components.Forms
+@using System.Text.Json
 
 <h3>Ingresar Valores de Frecuencia de Bolilla</h3>
 
 <EditForm Model="@frecuenciaBolilla" OnValidSubmit="HandleValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
-    
     <div>
         <label for="bolilla">Bolilla:</label>
         <InputNumber id="bolilla" @bind-Value="frecuenciaBolilla.bolilla" />
@@ -17,7 +17,6 @@
         <label for="numVeces">Número de Veces:</label>
         <InputNumber id="numVeces" @bind-Value="frecuenciaBolilla.numVeces" />
     </div>
-
     <button type="submit">Enviar</button>
 </EditForm>
 
@@ -62,22 +61,64 @@
 
     private async Task LoadFrecuencias()
     {
-        var client = HttpClientFactory.CreateClient("TinkaApi");
-        frecuencias = await client.GetFromJsonAsync<List<FrecuenciaBolilla>>("api/tinka/frecuencias");
+        try
+        {
+            var client = HttpClientFactory.CreateClient("TinkaApi");
+            var response = await client.GetAsync("api/tinka/frecuencias");
+
+            response.EnsureSuccessStatusCode(); // Asegura que la respuesta fue exitosa
+
+            var content = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"API Response: {content}"); // Log the response for debugging
+
+            if (!response.Content.Headers.ContentType.MediaType.Contains("application/json"))
+            {
+                throw new Exception("Invalid response format");
+            }
+
+            frecuencias = JsonSerializer.Deserialize<List<FrecuenciaBolilla>>(content);
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"Request error: {ex.Message}");
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"JSON error: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An unexpected error occurred: {ex.Message}");
+        }
     }
 
     private async Task HandleValidSubmit()
     {
-        var client = HttpClientFactory.CreateClient("TinkaApi");
-        var response = await client.PostAsJsonAsync("api/tinka/frecuencia", frecuenciaBolilla);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            message = "¡Frecuencia de bolilla ingresada exitosamente!";
-            await LoadFrecuencias();
+            var client = HttpClientFactory.CreateClient("TinkaApi");
+            var response = await client.PostAsJsonAsync("api/tinka/frecuencia", frecuenciaBolilla);
+            if (response.IsSuccessStatusCode)
+            {
+                message = "¡Frecuencia de bolilla ingresada exitosamente!";
+                await LoadFrecuencias();
+            }
+            else
+            {
+                message = "Hubo un error al ingresar la frecuencia de bolilla.";
+            }
         }
-        else
+        catch (HttpRequestException ex)
         {
-            message = "Hubo un error al ingresar la frecuencia de bolilla.";
+            Console.WriteLine($"Request error: {ex.Message}");
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"JSON error: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An unexpected error occurred: {ex.Message}");
         }
     }
 
@@ -88,16 +129,31 @@
 
     private async Task DeleteFrecuencia(int bolilla)
     {
-        var client = HttpClientFactory.CreateClient("TinkaApi");
-        var response = await client.DeleteAsync($"api/tinka/frecuencia/{bolilla}");
-        if (response.IsSuccessStatusCode)
+        try
         {
-            message = "¡Frecuencia de bolilla eliminada exitosamente!";
-            await LoadFrecuencias();
+            var client = HttpClientFactory.CreateClient("TinkaApi");
+            var response = await client.DeleteAsync($"api/tinka/frecuencia/{bolilla}");
+            if (response.IsSuccessStatusCode)
+            {
+                message = "¡Frecuencia de bolilla eliminada exitosamente!";
+                await LoadFrecuencias();
+            }
+            else
+            {
+                message = "Hubo un error al eliminar la Frecuencia de bolilla.";
+            }
         }
-        else
+        catch (HttpRequestException ex)
         {
-            message = "Hubo un error al eliminar la Frecuencia de bolilla.";
+            Console.WriteLine($"Request error: {ex.Message}");
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"JSON error: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An unexpected error occurred: {ex.Message}");
         }
     }
 
