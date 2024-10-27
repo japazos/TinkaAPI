@@ -10,7 +10,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor(); // No es necesario agregarlo dos veces
 builder.Services.AddHttpClient("TinkaApi", client =>
 {
-    client.BaseAddress = new Uri("https://predicciontinka.azurewebsites.net"); // URL de tu API
+    client.BaseAddress = new Uri("https://predicciontinka.azurewebsites.net/api/"); // URL de tu API
 });
 
 // Configurar la aplicación
