@@ -37,9 +37,22 @@ public class Program
         var app = builder.Build();
 
         app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "TinkaAPI V1");
+        });
 
-        app.MapControllers();
+
+        app.UseHttpsRedirection();
+        app.UseRouting();
+        app.UseAuthorization();
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+        });
+
+        //app.MapControllers();
         app.Run();
     }
 }
