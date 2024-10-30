@@ -81,7 +81,7 @@ jobs:
     - name: Deploy TinkaAPI to Azure WebApp
       uses: azure/webapps-deploy@v2
       with:
-        app-name: 'predicciontinka'
+        app-name: 'predicciontinkaapi'
         package: ./artifacts/TinkaAPI
 
     - name: Deploy TinkaBlazorApp to Azure WebApp
