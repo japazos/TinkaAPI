@@ -17,7 +17,7 @@ public class Program
             var configuration = s.GetRequiredService<IConfiguration>();
             var cosmosClient = new CosmosClient(
                 configuration.GetValue<string>("COSMOS_DB_ACCOUNT"),
-                configuration.GetValue<string>("COSMOS_DB_KEY")
+                configuration.GetValue<string>("COSMOS_DB_KEY_2")
             );
             var database = cosmosClient.GetDatabase(configuration["CosmosDb:DatabaseName"]);
             var sorteoContainer = database.GetContainer("TinkaPrediccion");
