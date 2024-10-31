@@ -15,18 +15,15 @@ public class Program
         builder.Services.AddSingleton(s =>
         {
             var configuration = s.GetRequiredService<IConfiguration>();
-            var cosmosDbAccount = configuration.GetValue<string>("COSMOS_DB_ACCOUNT")
-                                  ?? throw new InvalidOperationException("COSMOS_DB_ACCOUNT not set.");
-            var cosmosDbKey = configuration.GetValue<string>("COSMOS_DB_KEY_2")
-                              ?? throw new InvalidOperationException("COSMOS_DB_KEY_2 not set.");
-
-            var cosmosClient = new CosmosClient(cosmosDbAccount, cosmosDbKey);
+            var cosmosClient = new CosmosClient(
+                configuration.GetValue<string>("COSMOS_DB_ACCOUNT"),
+                configuration.GetValue<string>("COSMOS_DB_KEY")
+            );
             var database = cosmosClient.GetDatabase(configuration["CosmosDb:DatabaseName"]);
             var sorteoContainer = database.GetContainer("TinkaPrediccion");
             var frecuenciaContainer = database.GetContainer("FrecuenciaBolilla");
             return new TinkaService(sorteoContainer, frecuenciaContainer);
         });
-
 
         // Configuración del cliente HTTP para la API
         builder.Services.AddHttpClient("ApiClient", client =>

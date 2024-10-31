@@ -83,6 +83,9 @@ jobs:
       with:
         app-name: 'predicciontinkaapi'
         package: ./artifacts/TinkaAPI
+        env: 
+          COSMOS_DB_ACCOUNT: ${{ secrets.COSMOS_DB_ACCOUNT }} 
+          COSMOS_DB_KEY: ${{ secrets.COSMOS_DB_KEY }}
 
     - name: Deploy TinkaBlazorApp to Azure WebApp
       uses: azure/webapps-deploy@v2
