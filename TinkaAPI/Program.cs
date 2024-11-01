@@ -21,8 +21,7 @@ public class Program
             );
             var database = cosmosClient.GetDatabase(configuration["CosmosDb:DatabaseName"]);
             var sorteoContainer = database.GetContainer("TinkaPrediccion");
-            var frecuenciaContainer = database.GetContainer("FrecuenciaBolilla");
-            return new TinkaService(sorteoContainer, frecuenciaContainer);
+            return new TinkaService(sorteoContainer);
         });
 
         // Configuración del cliente HTTP para la API

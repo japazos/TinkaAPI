@@ -10,94 +10,86 @@ using MathNet.Numerics.LinearAlgebra.Double;
 
 public class TinkaService
 {
-    private readonly Container _sorteoContainer;
-    private readonly Container _frecuenciaContainer;
+    private readonly Container _container;
 
-    public TinkaService(Container sorteoContainer, Container frecuenciaContainer)
+    public TinkaService(Container container)
     {
-        _sorteoContainer = sorteoContainer ?? throw new ArgumentNullException(nameof(sorteoContainer));
-        _frecuenciaContainer = frecuenciaContainer ?? throw new ArgumentNullException(nameof(frecuenciaContainer));
+        _container = container ?? throw new ArgumentNullException(nameof(container));
     }
 
     public async Task<ItemResponse<Sorteo>> CreateSorteoAsync(Sorteo sorteo)
-    {
-        return await _sorteoContainer.CreateItemAsync(sorteo, new PartitionKey(sorteo.Id));
+    {        
+        return await _container.CreateItemAsync(sorteo, new PartitionKey(sorteo.Id));
     }
 
     public async Task<ItemResponse<FrecuenciaBolilla>> CreateFrecuenciaAsync(FrecuenciaBolilla frecuencia)
     {
-        return await _frecuenciaContainer.CreateItemAsync(frecuencia, new PartitionKey(frecuencia.Id));
+        return await _container.CreateItemAsync(frecuencia, new PartitionKey(frecuencia.Id));
     }
 
     public async Task DeleteAllSorteosAsync()
     {
-        var query = "SELECT * FROM c";
-        var iterator = _sorteoContainer.GetItemQueryIterator<Sorteo>(new QueryDefinition(query));
-
+        var query = "SELECT * FROM c WHERE c.documentType = 'Sorteo'";
+        var iterator = _container.GetItemQueryIterator<Sorteo>(new QueryDefinition(query));
         while (iterator.HasMoreResults)
         {
             foreach (var sorteo in await iterator.ReadNextAsync())
             {
-                await _sorteoContainer.DeleteItemAsync<Sorteo>(sorteo.Id, new PartitionKey(sorteo.Id));
+                await _container.DeleteItemAsync<Sorteo>(sorteo.Id, new PartitionKey(sorteo.Id));
             }
         }
     }
 
     public async Task DeleteSorteoAsync(string id)
     {
-        await _sorteoContainer.DeleteItemAsync<Sorteo>(id, new PartitionKey(id));
+        await _container.DeleteItemAsync<Sorteo>(id, new PartitionKey(id));
     }
 
     public async Task DeleteAllFrecuenciasAsync()
     {
-        var query = "SELECT * FROM c";
-        var iterator = _frecuenciaContainer.GetItemQueryIterator<FrecuenciaBolilla>(new QueryDefinition(query));
-
+        var query = "SELECT * FROM c WHERE c.documentType = 'FrecuenciaBolilla'";
+        var iterator = _container.GetItemQueryIterator<FrecuenciaBolilla>(new QueryDefinition(query));
         while (iterator.HasMoreResults)
         {
             foreach (var frecuencia in await iterator.ReadNextAsync())
             {
-                await _frecuenciaContainer.DeleteItemAsync<FrecuenciaBolilla>(frecuencia.Id, new PartitionKey(frecuencia.Id));
+                await _container.DeleteItemAsync<FrecuenciaBolilla>(frecuencia.Id, new PartitionKey(frecuencia.Id));
             }
         }
     }
 
     public async Task DeleteFrecuenciaAsync(int bolilla)
     {
-        await _frecuenciaContainer.DeleteItemAsync<FrecuenciaBolilla>(bolilla.ToString(), new PartitionKey(bolilla.ToString()));
+        await _container.DeleteItemAsync<FrecuenciaBolilla>(bolilla.ToString(), new PartitionKey(bolilla.ToString()));
     }
 
     public async Task<List<Sorteo>> GetAllSorteosAsync()
     {
-        var query = "SELECT * FROM c";
-        var iterator = _sorteoContainer.GetItemQueryIterator<Sorteo>(new QueryDefinition(query));
+        var query = "SELECT * FROM c WHERE c.documentType = 'Sorteo'";
+        var iterator = _container.GetItemQueryIterator<Sorteo>(new QueryDefinition(query));
         var sorteos = new List<Sorteo>();
-
         while (iterator.HasMoreResults)
         {
             var response = await iterator.ReadNextAsync();
             sorteos.AddRange(response);
         }
-
         return sorteos;
     }
 
     public async Task<List<FrecuenciaBolilla>> GetAllFrecuenciasAsync()
     {
-        var query = "SELECT * FROM c";
-        var iterator = _frecuenciaContainer.GetItemQueryIterator<FrecuenciaBolilla>(new QueryDefinition(query));
+        var query = "SELECT * FROM c WHERE c.documentType = 'FrecuenciaBolilla'";
+        var iterator = _container.GetItemQueryIterator<FrecuenciaBolilla>(new QueryDefinition(query));
         var frecuencias = new List<FrecuenciaBolilla>();
-
         while (iterator.HasMoreResults)
         {
             var response = await iterator.ReadNextAsync();
             frecuencias.AddRange(response);
         }
-
         return frecuencias;
     }
 
-
+    // Métodos de mayor y menor frecuencia, regresión polinómica, etc.
     public int[] MayorFrecuencia(List<Sorteo> sorteos)
     {
         Dictionary<int, int> frecuencia = new Dictionary<int, int>();
@@ -216,7 +208,7 @@ public class TinkaService
     }
 }
 
-public class Sorteo
+public class Sorteo 
 {
     [JsonProperty("id")]
     public string Id { get; set; }
@@ -227,12 +219,16 @@ public class Sorteo
     public int Bolilla4 { get; set; }
     public int Bolilla5 { get; set; }
     public int Bolilla6 { get; set; }
+    public string documentType { get; set; } = "Sorteo";
 }
 
-public class FrecuenciaBolilla
+public class FrecuenciaBolilla 
 {
     [JsonProperty("id")]
     public string Id => Bolilla.ToString();
     public int Bolilla { get; set; }
     public int NumVeces { get; set; }
+    public string documentType { get; set; } = "FrecuenciaBolilla";
 }
+
+

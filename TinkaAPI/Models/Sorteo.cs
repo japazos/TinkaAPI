@@ -13,9 +13,6 @@ namespace ProyeccionTinka.Models
         public int Bolilla4 { get; set; }
         public int Bolilla5 { get; set; }
         public int Bolilla6 { get; set; }
+        public string documentType { get; set; } = "Sorteo";
     }
-
-
-
-
 }

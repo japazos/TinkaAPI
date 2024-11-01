@@ -26,6 +26,7 @@
 }
 
 <h3>Registros de Frecuencia</h3>
+
 <table class="table">
     <thead>
         <tr>
@@ -65,9 +66,7 @@
         {
             var client = HttpClientFactory.CreateClient("TinkaApi");
             var response = await client.GetAsync("api/tinka/frecuencias");
-
             response.EnsureSuccessStatusCode(); // Asegura que la respuesta fue exitosa
-
             var content = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"API Response: {content}"); // Log the response for debugging
 
@@ -98,6 +97,7 @@
         {
             var client = HttpClientFactory.CreateClient("TinkaApi");
             var response = await client.PostAsJsonAsync("api/tinka/frecuencia", frecuenciaBolilla);
+
             if (response.IsSuccessStatusCode)
             {
                 message = "¡Frecuencia de bolilla ingresada exitosamente!";
@@ -133,6 +133,7 @@
         {
             var client = HttpClientFactory.CreateClient("TinkaApi");
             var response = await client.DeleteAsync($"api/tinka/frecuencia/{bolilla}");
+
             if (response.IsSuccessStatusCode)
             {
                 message = "¡Frecuencia de bolilla eliminada exitosamente!";
@@ -161,5 +162,7 @@
     {
         public int bolilla { get; set; }
         public int numVeces { get; set; }
+        public string documentType { get; set; } = "FrecuenciaBolilla";
     }
 }
+

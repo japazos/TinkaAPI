@@ -5,8 +5,9 @@ namespace ProyeccionTinka.Models
     public class FrecuenciaBolilla
     {
         [JsonProperty("id")]
-        public int Bolilla { get; set; }
-        public int NumVeces { get; set; }
+        public int bolilla { get; set; }
+        public int numVeces { get; set; }
+        public string documentType { get; set; } = "FrecuenciaBolilla";
     }
 
 

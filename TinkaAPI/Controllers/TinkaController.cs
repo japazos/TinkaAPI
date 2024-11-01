@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
@@ -134,7 +135,8 @@ public class TinkaController : ControllerBase
                     Bolilla4 = int.Parse(sorteoWorksheet.Cells[row, 6].Text),
                     Bolilla5 = int.Parse(sorteoWorksheet.Cells[row, 7].Text),
                     Bolilla6 = int.Parse(sorteoWorksheet.Cells[row, 8].Text),
-                };
+                    documentType = "Sorteo",
+            };
                 await _tinkaService.CreateSorteoAsync(sorteo);
             }
 
@@ -145,6 +147,7 @@ public class TinkaController : ControllerBase
                 {
                     Bolilla = int.Parse(frecuenciaWorksheet.Cells[row, 1].Text),
                     NumVeces = int.Parse(frecuenciaWorksheet.Cells[row, 2].Text),
+                    documentType = "FrecuenciaBolilla",
                 };
                 await _tinkaService.CreateFrecuenciaAsync(frecuencia);
             }
